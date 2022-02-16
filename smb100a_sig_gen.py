@@ -11,14 +11,9 @@ Mod Gen ?
 Modulation ?
 """
 
-import socket
 import time
+from sock_conn import s
 # The script uses raw ethernet socket communication, and thus VISA library/installation is not required
-
-# -----------Connection Settings--------------
-PORT = 5025             # default SMB R&S port 
-HOST = '10.8.88.166'    # 
-#---------------------------------------------
 
 # -----------Source Settings------------------
 Power = -25
@@ -33,62 +28,56 @@ FM_Mod = 'FM'
 PM_Mod = 'PM'
 # --------------------------------------------
 
-def initSigGen(HOST,PORT):
+# --------------Initialization of Variables---
+
+
+def initSigGen():
     """
     Identify instrument. Can be used as a connectivity check
     """
-    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    if s:
-        print("Connection succesful.")
-    s.connect((HOST, PORT))
-    s.settimeout(1)
     s.sendall(b'*IDN?\r\n')                             
     data = s.recv(1024)
     print('Received', data)
-    sig_gen_id = data               # for testing
+    sig_gen_id = data                           # for testing
     state=0
-    setstate='OUTP1 {}\r\n'.format(state)
+    setstate='OUTP1 {}\r\n'.format(state)       # Sets RF Output
     s.sendall(bytes(setstate, encoding='utf8'))
     s.sendall(b'OUTP1?\r\n')
     data=s.recv(1024)
-    set_state = data                # for testing
+    set_state = data                            # for testing
     print('Received', data)
     s.close()
     if data.decode('utf8')=='1\n':      # 
         print("RF Output On")
     else: print("RF Output Off")
 
-def setSigGenPower(HOST, PORT, power):
+def setSigGenPower(power):
     """
-    Identify instrument. Can be used as a connectivity check.
+    This function sets the power of the signal generator
+    Usage: 
+        Power: float
     """
-    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    s.connect((HOST, PORT))
     setpower = 'POW {}\r\n'.format(power)
     s.sendall(bytes(setpower, encoding='utf8'))
     s.sendall(b'POW?\r\n')
     data = float(s.recv(1024))
     print("Sig gen power = %f dBm" %data)
 
-def setSigGenFreq(HOST, PORT, Freq):
+def setSigGenFreq(Freq):
     """
     Identify instrument. Can be used as a connectivity check.
     """
-    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    s.connect((HOST, PORT))
     setfreq= "FREQ {}\r\n".format(Freq)
     s.sendall(bytes(setfreq, encoding='utf8'))
     s.sendall(b'FREQ?\r\n')
     data = float(s.recv(1024))
-    s.close()
+    #s.close()
     print(f"Sig gen frequency = {(data/1e6)} MHz")
 
-def setSigGenState(HOST,PORT,state):
+def setSigGenState(state):
     """
-    Identify instrument. Can be used as a connectivity check.
+    This function turns on/off the RF output state
     """
-    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    s.connect((HOST, PORT))
     setstate='OUTP1 {}\r\n'.format(state)
     s.sendall(bytes(setstate, encoding='utf8'))
     s.sendall(b'OUTP1?\r\n')
@@ -99,9 +88,7 @@ def setSigGenState(HOST,PORT,state):
         print("RF Output On")
     else: print(("RF Output Off"))
 
-def setSigGenModsState(HOST, PORT,ModsState):
-    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    s.connect((HOST, PORT))
+def setSigGenModsState(ModsState):
     setModsState='MOD:STAT {}\r\n'.format(ModsState)
     s.sendall(bytes(setModsState, encoding='utf8'))
     s.sendall(b'MOD:STAT?\n')
@@ -113,7 +100,7 @@ def setSigGenModsState(HOST, PORT,ModsState):
     else: print(("All modulations On"))
 
 
-def setSigGenModltn(HOST,PORT,Modltn):
+def setSigGenModltn(Modltn):
     """
     This function sets on different modulations:
     Usage:
@@ -121,11 +108,6 @@ def setSigGenModltn(HOST,PORT,Modltn):
         PM: string
         FM: string
     """
-    try:
-        s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        s.connect((HOST, PORT))
-    except Exception as e:
-        print(e,"Check to see if the port number is {PORT}")
     setModState='{}:STAT?\r\n'.format(Modltn)
     s.sendall(bytes(setModState, encoding='utf8'))
     data=s.recv(1024)
@@ -136,23 +118,23 @@ def setSigGenModltn(HOST,PORT,Modltn):
     else: print(f"{Modltn} Modulation On")
 
 def setupSigGen():
-    initSigGen(HOST,PORT)
+    initSigGen()
     time.sleep(2)                       # Wait a bit
-    setSigGenPower(HOST,PORT,Power)
+    setSigGenPower(Power)
     time.sleep(2)                       # Wait a bit
-    setSigGenFreq(HOST,PORT,Freq)
+    setSigGenFreq(Freq)
     time.sleep(2)                       # Wait a bit
-    setSigGenState(HOST,PORT,1)         # Turn on sig gen output
+    setSigGenState(1)         # Turn on sig gen output
     time.sleep(2)                       # Wait a bit
-    setSigGenModsState(HOST,PORT, OFF)  # Switch all modulations off
+    setSigGenModsState(OFF)  # Switch all modulations off
     time.sleep(2)                       # Wait a bit
-    setSigGenModsState(HOST,PORT, ON)   # Switch all modulations on
+    setSigGenModsState(ON)   # Switch all modulations on
     time.sleep(2)                       # Wait a bit
-    setSigGenModltn(HOST,PORT,AM_Mod)   # Select AM Modulation
+    setSigGenModltn(AM_Mod)   # Select AM Modulation
     time.sleep(5)                       # Wait a bit
-    setSigGenModltn(HOST,PORT,PM_Mod)   # Select PM Modulation
+    setSigGenModltn(PM_Mod)   # Select PM Modulation
     time.sleep(5)                       # Wait a bit
-    setSigGenModltn(HOST,PORT,FM_Mod)   # Select FM Modulation
+    setSigGenModltn(FM_Mod)   # Select FM Modulation
     print("/------End of Setup signal generator---------/")
 
 #%%   
