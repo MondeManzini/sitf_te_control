@@ -15,12 +15,8 @@ import time
 from sock_conn import s
 # The script uses raw ethernet socket communication, and thus VISA library/installation is not required
 
-# -----------Source Settings------------------
-Power = -25
-Freq = 1500e6
-# --------------------------------------------
-
-#-------------Modulation Settings-------------
+Zero = 0
+One = 1
 OFF = 'OFF'
 ON = 'ON'
 AM_Mod = 'AM'
@@ -29,11 +25,13 @@ PM_Mod = 'PM'
 # --------------------------------------------
 
 # --------------Initialization of Variables---
-
+Power = 0                                 
+Freq = 0                
 
 def initSigGen():
     """
-    Identify instrument. Can be used as a connectivity check
+    This function establishes a socket connection and identifies the instrument
+    @params     : None
     """
     s.sendall(b'*IDN?\r\n')                             
     data = s.recv(1024)
@@ -74,11 +72,11 @@ def setSigGenFreq(Freq):
     #s.close()
     print(f"Sig gen frequency = {(data/1e6)} MHz")
 
-def setSigGenState(state):
+def setSigGenState(RFOut):
     """
     This function turns on/off the RF output state
     """
-    setstate='OUTP1 {}\r\n'.format(state)
+    setstate='OUTP1 {}\r\n'.format(RFOut)
     s.sendall(bytes(setstate, encoding='utf8'))
     s.sendall(b'OUTP1?\r\n')
     data=s.recv(1024)
@@ -89,6 +87,10 @@ def setSigGenState(state):
     else: print(("RF Output Off"))
 
 def setSigGenModsState(ModsState):
+    """
+    This function sets all modulation modes off
+    @param ModsState: String
+    """
     setModsState='MOD:STAT {}\r\n'.format(ModsState)
     s.sendall(bytes(setModsState, encoding='utf8'))
     s.sendall(b'MOD:STAT?\n')
@@ -99,42 +101,49 @@ def setSigGenModsState(ModsState):
         print("All modulations Off")
     else: print(("All modulations On"))
 
-
-def setSigGenModltn(Modltn):
+# ---------------------Modulations State Function-----------------------
+def setSigGenModState(ModState):
     """
-    This function sets on different modulations:
-    Usage:
-        AM: string
-        PM: string
-        FM: string
+    This function sets on different modulation schemes:
+    @param  AM: string /
+            PM: string /
+            FM: string
     """
-    setModState='{}:STAT?\r\n'.format(Modltn)
+    setModState='{}:STAT?\r\n'.format(ModState)
     s.sendall(bytes(setModState, encoding='utf8'))
     data=s.recv(1024)
     print('Received', data)
     s.close()
     if data.decode("UTF-8") == "1\n":
-        print(f"{Modltn} Modulation On")
-    else: print(f"{Modltn} Modulation On")
+        print(f"{ModState} Modulation On")
+    else: print(f"{ModState} Modulation On")
+
+# ---------------------Main Function-----------------------------------
 
 def setupSigGen():
-    initSigGen()
-    time.sleep(2)                       # Wait a bit
-    setSigGenPower(Power)
-    time.sleep(2)                       # Wait a bit
-    setSigGenFreq(Freq)
-    time.sleep(2)                       # Wait a bit
-    setSigGenState(1)         # Turn on sig gen output
-    time.sleep(2)                       # Wait a bit
-    setSigGenModsState(OFF)  # Switch all modulations off
-    time.sleep(2)                       # Wait a bit
-    setSigGenModsState(ON)   # Switch all modulations on
-    time.sleep(2)                       # Wait a bit
-    setSigGenModltn(AM_Mod)   # Select AM Modulation
-    time.sleep(5)                       # Wait a bit
-    setSigGenModltn(PM_Mod)   # Select PM Modulation
-    time.sleep(5)                       # Wait a bit
-    setSigGenModltn(FM_Mod)   # Select FM Modulation
+    initSigGen()                    # Get instrument ID
+    time.sleep(5)                   # Wait a bit
+    setSigGenPower(Power)           # Set the power to 0dBm
+    time.sleep(5)                   # Wait a bit
+    setSigGenPower(-25)             # Set the power to -25dBm
+    time.sleep(5)                   # Wait a bit
+    setSigGenFreq(Freq)             # Set the power to 0Hz
+    time.sleep(5)                   # Wait a bit
+    setSigGenFreq(1500e6)           # Set the power to 1.5GHz
+    time.sleep(5)                   # Wait a bit
+    setSigGenState(Zero)            # Turn on sig gen output
+    time.sleep(5)                   # Wait a bit
+    setSigGenState(One)             # Turn on sig gen output
+    time.sleep(5)                   # Wait a bit
+    setSigGenModsState(OFF)         # Switch all modulations off
+    time.sleep(5)                   # Wait a bit
+    setSigGenModsState(ON)          # Switch all modulations on
+    time.sleep(5)                   # Wait a bit
+    setSigGenModState(AM_Mod)       # Select AM Modulation
+    time.sleep(5)                   # Wait a bit
+    setSigGenModState(PM_Mod)       # Select PM Modulation
+    time.sleep(5)                   # Wait a bit
+    setSigGenModState(FM_Mod)       # Select FM Modulation
     print("/------End of Setup signal generator---------/")
 
 #%%   
