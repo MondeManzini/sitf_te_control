@@ -12,9 +12,27 @@ Modulation ?
 """
 
 import time
-from sock_conn import s
+import socket
+#from sock_conn import s
 # The script uses raw ethernet socket communication, and thus VISA library/installation is not required
 
+# -----------Connection Settings--------------
+PORT = 5025             # default SMB R&S port 
+HOST = '10.8.88.166'    #                        -- Section to be removed to a separate file
+#---------------------------------------------
+
+try:
+    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s.connect((HOST, PORT))
+    s.settimeout(1)
+    if s:
+        print(s,"Connection succesful.")
+except Exception as e:
+    print(e,"Check to see if the port number is {PORT}")
+
+# --------------Initialization of Variables---
+Power = 0                                 
+Freq = 0     
 Zero = 0
 One = 1
 OFF = 'OFF'
@@ -24,9 +42,7 @@ FM_Mod = 'FM'
 PM_Mod = 'PM'
 # --------------------------------------------
 
-# --------------Initialization of Variables---
-Power = 0                                 
-Freq = 0                
+           
 
 def initSigGen():
     """
@@ -52,8 +68,7 @@ def initSigGen():
 def setSigGenPower(power):
     """
     This function sets the power of the signal generator
-    Usage: 
-        Power: float
+    @param  Power: float
     """
     setpower = 'POW {}\r\n'.format(power)
     s.sendall(bytes(setpower, encoding='utf8'))
@@ -75,6 +90,7 @@ def setSigGenFreq(Freq):
 def setSigGenState(RFOut):
     """
     This function turns on/off the RF output state
+    @params RFOut:  Integer
     """
     setstate='OUTP1 {}\r\n'.format(RFOut)
     s.sendall(bytes(setstate, encoding='utf8'))
