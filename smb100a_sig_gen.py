@@ -126,15 +126,14 @@ def setSigGenModltn(HOST,PORT,Modltn):
         s.connect((HOST, PORT))
     except Exception as e:
         print(e,"Check to see if the port number is {PORT}")
-    setstate='{}:STAT ON\r\n'.format(Modltn)
-    s.sendall(bytes(setstate, encoding='utf8'))
-    s.sendall(b'{Modltn}:STAT?\r\n')
+    setModState='{}:STAT?\r\n'.format(Modltn)
+    s.sendall(bytes(setModState, encoding='utf8'))
     data=s.recv(1024)
     print('Received', data)
     s.close()
     if data.decode("UTF-8") == "1\n":
-        print("{Modltn} Modulation On")
-    else: print("{Modltn} Modulation On")
+        print(f"{Modltn} Modulation On")
+    else: print(f"{Modltn} Modulation On")
 
 def setupSigGen():
     initSigGen(HOST,PORT)
@@ -147,12 +146,12 @@ def setupSigGen():
     time.sleep(2)                       # Wait a bit
     setSigGenModsState(HOST,PORT, OFF)  # Switch all modulations off
     time.sleep(2)                       # Wait a bit
-    setSigGenModsState(HOST,PORT, ON)   # Switch all modulations off
+    setSigGenModsState(HOST,PORT, ON)   # Switch all modulations on
     time.sleep(2)                       # Wait a bit
     setSigGenModltn(HOST,PORT,AM_Mod)   # Select AM Modulation
-    time.sleep(2)                       # Wait a bit
+    time.sleep(5)                       # Wait a bit
     setSigGenModltn(HOST,PORT,PM_Mod)   # Select PM Modulation
-    time.sleep(2)                       # Wait a bit
+    time.sleep(5)                       # Wait a bit
     setSigGenModltn(HOST,PORT,FM_Mod)   # Select FM Modulation
     print("/------End of Setup signal generator---------/")
 
