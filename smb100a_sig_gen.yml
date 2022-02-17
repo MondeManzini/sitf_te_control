@@ -1,0 +1,13 @@
+name: SMB100A_Testing
+on: push
+
+jobs:
+  test_project:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run SMB100A unit tests
+      run: |
+        pip3 install --user socket
+        python3 smb100a_sig_gen_test.py
+
