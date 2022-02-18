@@ -1,7 +1,7 @@
 import time
 import unittest
 from unittest import TestCase
-from smb100a_sig_gen import initSigGen
+from smb100a_sig_gen_RevA import initSigGen
 
 # sig_gen_id = Rohde&Schwarz,SMB100A,1406.6000k02/102027,3.1.19.15-3.20.390.24 \n
 
@@ -18,6 +18,7 @@ class setupSigGenTest(TestCase):
 
     def setSigGenFreqTest(self, freq):
         self.assertFalse(freq, 1500e6)
+        time.sleep(5)  
         self.assertTrue(freq, 1500e6)
 
 if __name__ == '__main__':
